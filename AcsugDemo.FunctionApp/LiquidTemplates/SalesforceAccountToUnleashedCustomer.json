@@ -1,0 +1,24 @@
+﻿{
+  "Addresses": [
+    {
+      "StreetAddress": "{{ BillingStreet }}",
+      "Region": "{{ BillingState }}",
+      "City": "{{ BillingCity }}",
+      "Country": "{{ BillingCountry }}",
+      "PostalCode": "{{ BillingPostalCode }}"
+    }
+  ],
+  "CustomerCode": "{{ AccountNumber }}",
+  "CustomerName": "{{ Name }}",
+  "PhoneNumber": "{{ Phone }}",
+  "Currency": {
+    "CurrencyCode": "NZD"
+  },
+  "Taxable": true,
+  "PrintPackingSlipInsteadOfInvoice": false,
+  "SellPriceTier": "",
+  "CustomerType": "On Account",
+  "PaymentTerm": "20th Month following",
+  "LastModifiedBy": null,
+  "Guid": "{{ Guid }}"
+}

@@ -1,0 +1,12 @@
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+AcsugDemo.LogicApps/SalesforceNewAccounts/obj/Debug/SalesforceNewAccounts.deployproj.FileListAbsolute.txt
+AcsugDemo.ResourceGroup/bin/Debug/staging/AcsugDemo.AzureResourceGroup/UpdateSecretValues.ps1
+AcsugDemo.LogicApps/SalesforceNewAccounts/bin/Debug/staging/SalesforceNewAccounts/LogicApp.json
+AcsugDemo.LogicApps/SalesforceNewAccounts/bin/Debug/staging/SalesforceNewAccounts/Deploy-AzureResourceGroup.ps1
+AcsugDemo.ResourceGroup/bin/Debug/staging/AcsugDemo.AzureResourceGroup/UpdateAppSettings.ps1
+AcsugDemo.LogicApps/SalesforceNewAccounts/bin/Debug/staging/SalesforceNewAccounts/LogicApp.parameters.json
+AcsugDemo.ResourceGroup/obj/Debug/AcsugDemo.AzureResourceGroup.deployproj.FileListAbsolute.txt

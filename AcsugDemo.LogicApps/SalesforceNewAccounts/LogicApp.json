@@ -1,0 +1,228 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "logicAppLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "allowedValues": [
+        "[resourceGroup().location]",
+        "eastasia",
+        "southeastasia",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "westus",
+        "northcentralus",
+        "southcentralus",
+        "northeurope",
+        "westeurope",
+        "japanwest",
+        "japaneast",
+        "brazilsouth",
+        "australiaeast",
+        "australiasoutheast",
+        "southindia",
+        "centralindia",
+        "westindia",
+        "canadacentral",
+        "canadaeast",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westus2"
+      ],
+      "metadata": {
+        "description": "Location of the Logic App."
+      }
+    },
+    "salesforce_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "salesforce"
+    },
+    "salesforce_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "harris.kristanto@adaptiv.co.nz"
+    },
+    "salesforce_1_token:LoginUri": {
+      "type": "string",
+      "metadata": {
+        "description": "The Salesforce Login URI. For Production, leave blank or use https://login.salesforce.com"
+      },
+      "defaultValue": "https://login.salesforce.com"
+    },
+    "salesforce_1_salesforceApiVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "The Salesforce API Version. For default, leave blank or use v34.0"
+      },
+      "defaultValue": "v34"
+    },
+    "outlook_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "outlook"
+    },
+    "outlook_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "outlook_4E25AABDE8CC7AC7@outlook.com"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[parameters('logicAppName')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('logicAppLocation')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "Main_Scope": {
+              "type": "Scope",
+              "actions": {
+                "TransformToUnleashedCustomer_Function": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "https://TBC"
+                  },
+                  "runAfter": {}
+                },
+                "Check_if_message_was_duplicated": {
+                  "type": "If",
+                  "expression": "@equals(body('TransformToUnleashedCustomer_Function')?['IsMessageDuplicated'], true)",
+                  "actions": {
+                    "Notify_SysAdmin": {
+                      "type": "ApiConnection",
+                      "inputs": {
+                        "host": {
+                          "connection": {
+                            "name": "@parameters('$connections')['outlook']['connectionId']"
+                          }
+                        },
+                        "method": "post",
+                        "path": "/Mail",
+                        "body": {
+                          "To": "harris.kristanto@adaptiv.co.nz",
+                          "Subject": "Duplicate Customer Record",
+                          "Body": "Hi,\n\nThis is to inform you that a duplicate customer record with account number: @{body('TransformToUnleashedCustomer_Function')?['CustomerCode']} was received.\n\nPlease investigate.\n\nThanks"
+                        }
+                      },
+                      "runAfter": {}
+                    }
+                  },
+                  "runAfter": {
+                    "TransformToUnleashedCustomer_Function": [
+                      "Succeeded"
+                    ]
+                  },
+                  "else": {
+                    "actions": {
+                      "UpdateUnleashedCustomer_Function": {
+                        "type": "Http",
+                        "inputs": {
+                          "method": "POST",
+                          "uri": "https://TBC"
+                        },
+                        "runAfter": {}
+                      }
+                    }
+                  }
+                }
+              },
+              "runAfter": {}
+            }
+          },
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "When_Salesforce_Account_is_Created": {
+              "type": "ApiConnection",
+              "inputs": {
+                "host": {
+                  "connection": {
+                    "name": "@parameters('$connections')['salesforce']['connectionId']"
+                  }
+                },
+                "method": "get",
+                "path": "/datasets/default/tables/@{encodeURIComponent(encodeURIComponent('Account'))}/onnewitems"
+              },
+              "recurrence": {
+                "frequency": "Hour",
+                "interval": 1
+              },
+              "splitOn": "@triggerBody()?['value']"
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "outlook": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'outlook')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('outlook_1_Connection_Name'))]",
+                "connectionName": "[parameters('outlook_1_Connection_Name')]"
+              },
+              "salesforce": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'salesforce')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('salesforce_1_Connection_Name'))]",
+                "connectionName": "[parameters('salesforce_1_Connection_Name')]"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/connections', parameters('outlook_1_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', parameters('salesforce_1_Connection_Name'))]"
+      ]
+    },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('salesforce_1_Connection_Name')]",
+      "location": "[parameters('logicAppLocation')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'salesforce')]"
+        },
+        "displayName": "[parameters('salesforce_1_Connection_DisplayName')]",
+        "nonSecretParameterValues": {
+          "token:LoginUri": "[parameters('salesforce_1_token:LoginUri')]",
+          "salesforceApiVersion": "[parameters('salesforce_1_salesforceApiVersion')]"
+        }
+      }
+    },
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2016-06-01",
+      "name": "[parameters('outlook_1_Connection_Name')]",
+      "location": "[parameters('logicAppLocation')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'outlook')]"
+        },
+        "displayName": "[parameters('outlook_1_Connection_DisplayName')]"
+      }
+    }
+  ],
+  "outputs": {}
+}

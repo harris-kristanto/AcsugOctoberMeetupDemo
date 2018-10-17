@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appName": {
+      "value": "AcsugDemo-Func"
+    },
+    "hostingPlanName": {
+      "value": "ASP-AE-ACSUG-Demo"
+    },
+    "keyVaultName": {
+      "value": "AcsugSecretVault"
+    },
+    "unleashedApiId": {
+      "value": ""
+    },
+    "appInsightsKey": {
+      "value": ""
+    },
+    "secretsObject": {
+      "value": {
+        "secrets": [
+          {
+            "secretName": "UnleashedApiKey",
+            "secretValue": ""
+          }
+        ]
+      }
+    }
+  }
+}
